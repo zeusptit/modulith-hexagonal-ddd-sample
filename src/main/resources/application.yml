@@ -1,0 +1,64 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: monolith-hexagonal-ddd-sample
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: dbuser
+    password: dbpass
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+
+logging:
+  level:
+    root: INFO
+    com.monolithhexagonaldddsample: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+        step: 10s
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+      export:
+        step: 10s # Export interval set to 10 seconds
+  tracing:
+    sampling:
+      probability: 1.0
+    enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+cuongtp:
+  app:
+    jwtCookieName: cuongtp-jwt
+    jwtRefreshCookieName: cuongtp-jwt-refresh
+    jwtSecret: ======================cuongtpp=Spring===========================
+    jwtExpirationMs: 86400000
+    jwtRefreshExpirationMs: 86400000
+
