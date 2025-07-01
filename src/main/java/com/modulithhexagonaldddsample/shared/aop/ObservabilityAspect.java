@@ -1,5 +1,7 @@
 package com.modulithhexagonaldddsample.shared.aop;
 
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,24 +22,28 @@ public class ObservabilityAspect {
         this.tracer = tracer;
     }
 
-    @Around("execution(* com.modulithhexagonaldddsample..*Service.*(..))")
-    public Object observeService(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("execution(* com.modulithhexagonaldddsample..service..*(..))")
+    public Object traceServiceMethods(ProceedingJoinPoint joinPoint) throws Throwable {
         String methodName = joinPoint.getSignature().toShortString();
+        Span span = tracer.nextSpan().name(methodName);
 
-        Span span = tracer.nextSpan().name(methodName).start();
-
-        try (Tracer.SpanInScope scope = tracer.withSpan(span)) {
-            logger.info("Start: {}", methodName);
+        try (Tracer.SpanInScope spanInScope = tracer.withSpan(span.start())) {
+            logger.info("Started span for method {} - TraceId: {}, SpanId: {}",
+                    methodName,
+                    span.context().traceId(),
+                    span.context().spanId());
+            
             Object result = joinPoint.proceed();
-            logger.info("Success: {}", methodName);
+            span.tag("outcome", "success");
             return result;
-        } catch (Exception e) {
-            span.error(e);
-            logger.error("Error in {}: {}", methodName, e.getMessage());
-            throw e;
+        } catch (Throwable t) {
+            span.tag("outcome", "error");
+            span.tag("error.type", t.getClass().getName());
+            span.tag("error.message", t.getMessage());
+            logger.error("Error in {}: {}", methodName, t.getMessage(), t);
+            throw t;
         } finally {
             span.end();
         }
     }
 }
-

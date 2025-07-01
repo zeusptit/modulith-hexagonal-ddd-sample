@@ -28,10 +28,16 @@ public class UserController {
     }
 
     @PostMapping
-//    @PreAuthorize("@authService.hasPrivilege('user:save')")
     @PreAuthorize("hasAuthority('user:create')")
     public ResponseEntity<User> createUser(@RequestBody UserRequest userRequest) {
         User user = userUseCase.createUser(userRequest);
         return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("save-all")
+    @PreAuthorize("hasAuthority('user:create')")
+    public ResponseEntity<List<User>> saveAllUsers(@RequestBody List<UserRequest> userRequests) {
+        List<User> users = userUseCase.saveAllUsers(userRequests);
+        return ResponseEntity.ok(users);
     }
 }

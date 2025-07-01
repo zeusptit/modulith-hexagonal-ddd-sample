@@ -7,6 +7,7 @@ import com.modulithhexagonaldddsample.auth.domain.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,6 +50,17 @@ public class UserRepositoryAdapter implements UserRepository {
     public List<User> findAll() {
         return jpaRepository.findAll()
                 .stream()
+                .map(UserMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<User> saveAll(List<User> users) {
+        return jpaRepository.saveAll(
+                users.stream()
+                        .map(UserMapper::toEntity)
+                        .toList()
+        ).stream()
                 .map(UserMapper::toDomain)
                 .toList();
     }

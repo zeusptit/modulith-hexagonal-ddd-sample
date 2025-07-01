@@ -78,4 +78,12 @@ public class UserUseCaseImpl implements UserUseCase {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
+    @Override
+    public List<User> saveAllUsers(List<UserRequest> userRequests) {
+        List<User> users = userRequests.stream()
+                .map(this::createUser)
+                .toList();
+        return userRepository.saveAll(users);
+    }
 }

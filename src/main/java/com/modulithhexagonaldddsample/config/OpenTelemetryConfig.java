@@ -2,6 +2,7 @@ package com.modulithhexagonaldddsample.config;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -55,7 +56,7 @@ public class OpenTelemetryConfig {
     LogRecordProcessor otelLogRecordProcessor() {
         return BatchLogRecordProcessor.builder(
                 OtlpGrpcLogRecordExporter.builder()
-                        .setEndpoint("http://localhost:4317")
+                        .setEndpoint("http://otel-collector:4317")
                         .build()
         ).build();
     }
@@ -67,7 +68,7 @@ public class OpenTelemetryConfig {
         );
 
         SpanExporter spanExporter = OtlpGrpcSpanExporter.builder()
-                .setEndpoint("http://localhost:4317")
+                .setEndpoint("http://otel-collector:4317")
                 .build();
 
         return SdkTracerProvider.builder()
@@ -75,4 +76,10 @@ public class OpenTelemetryConfig {
                 .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
                 .build();
     }
+
+    @Bean
+    public Tracer tracer(OpenTelemetry openTelemetry) {
+        return openTelemetry.getTracer("com.monolithhexagonaldddsample");
+    }
+
 }

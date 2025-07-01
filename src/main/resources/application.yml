@@ -6,7 +6,7 @@ spring:
     name: monolith-hexagonal-ddd-sample
 
   datasource:
-    url: jdbc:mysql://localhost:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://mysql-hexagonal-ddd:3306/catalog_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: dbuser
     password: dbpass
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -35,14 +35,20 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,metrics,prometheus
+        include: health,metrics,prometheus,info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    db:
+      enabled: true
   otlp:
     metrics:
       export:
-        url: http://localhost:4318/v1/metrics
+        url: http://otel-collector:4318/v1/metrics   # Đảm bảo trỏ đến đúng OpenTelemetry collector
         step: 10s
     tracing:
-      endpoint: http://localhost:4318/v1/traces
+      endpoint: http://otel-collector:4318/v1/traces   # Đảm bảo trỏ đến đúng OpenTelemetry collector
       export:
         step: 10s # Export interval set to 10 seconds
   tracing:
@@ -61,4 +67,3 @@ cuongtp:
     jwtSecret: ======================cuongtpp=Spring===========================
     jwtExpirationMs: 86400000
     jwtRefreshExpirationMs: 86400000
-

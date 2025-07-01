@@ -18,4 +18,6 @@ public interface UserRepository {
     User save(User user);
 
     List<User> findAll();
+
+    List<User> saveAll(java.util.List<com.modulithhexagonaldddsample.auth.domain.model.User> users);
 }

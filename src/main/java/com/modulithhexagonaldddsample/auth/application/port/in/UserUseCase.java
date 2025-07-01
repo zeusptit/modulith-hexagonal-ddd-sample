@@ -14,4 +14,6 @@ public interface UserUseCase {
     User createUser(UserRequest userRequest);
 
     List<User> getAllUsers();
+
+    List<User> saveAllUsers(java.util.List<com.modulithhexagonaldddsample.auth.adapter.in.dto.request.UserRequest> userRequests);
 }
