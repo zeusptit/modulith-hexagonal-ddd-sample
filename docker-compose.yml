@@ -26,6 +26,7 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
     ports:
       - "9090:9090"
     networks:
@@ -61,7 +62,7 @@ services:
       - grafana-storage:/var/lib/grafana
 
   mysql:
-    image: mysql:8.0
+    image: mysql:latest
     container_name: mysql-hexagonal-ddd
     restart: unless-stopped
     environment:
@@ -71,8 +72,43 @@ services:
       MYSQL_PASSWORD: dbpass
     ports:
       - "3306:3306"
+    networks:
+      - observability
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "mysql-hexagonal-ddd", "-u", "root", "-p$MYSQL_ROOT_PASSWORD" ]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./docker/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    networks:
+      - observability
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: modulith-ddd-hexagonal-sample
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-hexagonal-ddd:3306/catalog_db
+      SPRING_DATASOURCE_USERNAME: dbuser
+      SPRING_DATASOURCE_PASSWORD: dbpass
+    ports:
+      - "8080:8080"
+    networks:
+      - observability
+
 
 networks:
   observability:
